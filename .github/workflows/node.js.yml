@@ -34,7 +34,7 @@ jobs:
         sudo apt-get install -y awscli
 
         # Check if key pair exists and delete if so
-        existing_key=$(aws ec2 describe-key-pairs --key-name my-key-pair --query "KeyPairs[0].KeyName" --output text)
+        existing_key=$(aws ec2 describe-key-pairs --key-name my-key-pair --query "KeyPairs[0].KeyName" --output text || echo "")
         if [ "$existing_key" == "my-key-pair" ]; then
           aws ec2 delete-key-pair --key-name my-key-pair
           echo "Deleted existing key pair"
@@ -60,8 +60,15 @@ jobs:
         PRIVATE_KEY: ${{ env.PRIVATE_KEY }}
         PUBLIC_IP: ${{ env.PUBLIC_IP }}
       run: |
+        echo "Deploying to $PUBLIC_IP"
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
+
+        # Test SSH connection
+        ssh -o "StrictHostKeyChecking=no" -i private_key.pem ubuntu@$PUBLIC_IP 'echo "SSH connection successful"'
+        
+        # Deploy application
         ssh -o "StrictHostKeyChecking=no" -i private_key.pem ubuntu@$PUBLIC_IP << 'EOF'
+          echo "Deploying Medusa application"
           sudo docker run -d -p 9000:9000 medusajs/medusa
         EOF
