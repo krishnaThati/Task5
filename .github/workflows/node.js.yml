@@ -32,9 +32,15 @@ jobs:
       run: |
         # Ensure aws-cli is installed
         sudo apt-get install -y awscli
-        
-        # Delete the key pair if it exists
-        aws ec2 delete-key-pair --key-name my-key-pair || echo "Key pair does not exist, skipping deletion"
+
+        # Check if key pair exists and delete if so
+        existing_key=$(aws ec2 describe-key-pairs --key-name my-key-pair --query "KeyPairs[0].KeyName" --output text)
+        if [ "$existing_key" == "my-key-pair" ]; then
+          aws ec2 delete-key-pair --key-name my-key-pair
+          echo "Deleted existing key pair"
+        else
+          echo "Key pair does not exist, skipping deletion"
+        fi
 
     - name: Terraform Init
       run: terraform init
