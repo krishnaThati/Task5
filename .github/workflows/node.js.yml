@@ -25,6 +25,17 @@ jobs:
       with:
         terraform_version: 1.4.6
 
+    - name: Remove Existing Key Pair
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        # Ensure aws-cli is installed
+        sudo apt-get install -y awscli
+        
+        # Delete the key pair if it exists
+        aws ec2 delete-key-pair --key-name my-key-pair || echo "Key pair does not exist, skipping deletion"
+
     - name: Terraform Init
       run: terraform init
 
