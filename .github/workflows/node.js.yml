@@ -35,15 +35,19 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         terraform apply -auto-approve
-        # Use Terraform output and export it as an environment variable
+        # Export output to environment variable
         echo "PUBLIC_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+        # Debug the environment variable
+        echo "PUBLIC_IP=$(terraform output -raw public_ip)"
+
+    - name: Debug Environment Variable
+      run: echo "PUBLIC_IP is $PUBLIC_IP"
 
     - name: Deploy Application
       env:
         PUBLIC_IP: ${{ env.PUBLIC_IP }}
       run: |
         echo "Deploying to $PUBLIC_IP"
-
         # Test SSH connection
         ssh -o "StrictHostKeyChecking=no" ubuntu@$PUBLIC_IP 'echo "SSH connection successful"'
         
