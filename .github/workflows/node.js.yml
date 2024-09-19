@@ -1,4 +1,4 @@
-name: Node.js CI 
+name: Node.js CI
 
 on:
   push:
@@ -35,6 +35,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         terraform apply -auto-approve
+        # Use Terraform output and export it as an environment variable
         echo "PUBLIC_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
 
     - name: Deploy Application
@@ -44,7 +45,6 @@ jobs:
         echo "Deploying to $PUBLIC_IP"
 
         # Test SSH connection
-        # Note: Ensure you have a valid SSH key in your local environment or that the instance has appropriate access
         ssh -o "StrictHostKeyChecking=no" ubuntu@$PUBLIC_IP 'echo "SSH connection successful"'
         
         # Deploy application
